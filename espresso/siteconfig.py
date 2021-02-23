@@ -2,7 +2,7 @@
 
 # ****************************************************************************
 # Copyright 2015-2017 Lukasz Mentel
-#
+# Copyleft 2020 Sandip De (minor fix for PBS) 
 # This file is distributed under the terms of the
 # GNU General Public License. See the file 'COPYING'
 # in the root directory of the present distribution,
@@ -72,7 +72,6 @@ class SiteConfig(with_metaclass(Singleton, object)):
     Site configuration holding details about the execution environment
     with methods for retrieving the details from systems variables and
     creating directories
-
     Args:
         scheduler (str) :
             Name of the scheduler, curretly supports only `SLURM` and
@@ -142,12 +141,10 @@ class SiteConfig(with_metaclass(Singleton, object)):
     def set_interactive(self):
         '''
         Set the attributes necessary for interactive runs
-
         - `batchmode` is False
         - `jobid` is set to the PID
         - `global_scratch` checks for scratch under `self.scratchenv` if it is
           not defined used current directory
-
         '''
 
         self.scheduler = None
@@ -216,7 +213,8 @@ class SiteConfig(with_metaclass(Singleton, object)):
 
         self.nprocs = len(self.hosts)
         uniqnodes = sorted(set(self.hosts))
-
+        self.nodelist=uniqnodes
+        self.nnodes=len(uniqnodes)
         self.perHostMpiExec = ['mpirun', '-host', ','.join(uniqnodes),
                                '-np', '{0:d}'.format(len(uniqnodes))]
 
@@ -226,7 +224,6 @@ class SiteConfig(with_metaclass(Singleton, object)):
     def make_localtmp(self, workdir):
         '''
         Create a temporary local directory for the job
-
         Args:
             workdir (str) :
                 Name of the working directory for the run
@@ -269,7 +266,6 @@ class SiteConfig(with_metaclass(Singleton, object)):
 
     def get_host_mpi_command(self, program, aslist=True):
         'Return a command as list to execute `program` through MPI per host'
-
         command = 'mpirun -host {} '.format(','.join(self.nodelist)) +\
                   '-np {0:d} {1:s}'.format(self.nnodes, program)
 
