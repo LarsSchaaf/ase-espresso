@@ -864,10 +864,13 @@ class Espresso(FileIOCalculator, object):
         '''
         Read the results from the file and populate the `results` dictionary
         '''
-
+        stress=self.read_stress() #3x3 matrix
+        
+        stress= np.array([stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]])  #xx, yy, zz, yz, xz, xy in ase syntax
+        
         self.results = {'energy': self.read_energies()[0],
                         'forces': self.read_forces(),
-                        'stress': self.read_stress(),
+                        'stress': stress,
                         'absolute magnetization': self.read_magnetizations()[0],
                         'total magnetization': self.read_magnetizations()[1],
                         #'dipole': self.get_dipole(),
