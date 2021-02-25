@@ -866,7 +866,7 @@ class Espresso(FileIOCalculator, object):
         '''
         stress=self.read_stress() #3x3 matrix
         
-        stress= np.array([stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]])  #xx, yy, zz, yz, xz, xy in ase syntax
+        if stress: stress= np.array([stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]])  #xx, yy, zz, yz, xz, xy in ase syntax
         
         self.results = {'energy': self.read_energies()[0],
                         'forces': self.read_forces(),
