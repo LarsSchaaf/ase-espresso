@@ -253,11 +253,11 @@ class SiteConfig(with_metaclass(Singleton, object)):
 
         # nodefile = os.getenv('PBS_NODEFILE')
         # with open(nodefile, 'r') as nf:
-        # self.hosts = [os.getenv("HOSTNAME")]
+        self.hosts = [os.getenv("HOSTNAME")]
 
-        self.nprocs = 1  # len(self.hosts)
-        # uniqnodes = sorted(set(self.hosts))
-        # self.nodelist=uniqnodes
+        self.nprocs = len(self.hosts)
+        uniqnodes = sorted(set(self.hosts))
+        self.nodelist = uniqnodes
         self.nnodes = int(os.getenv("NSLOTS"))
         self.perHostMpiExec = [
             "mpirun",  #'-host', ','.join(uniqnodes),
@@ -317,12 +317,13 @@ class SiteConfig(with_metaclass(Singleton, object)):
 
     def get_host_mpi_command(self, program, aslist=True):
         "Return a command as list to execute `program` through MPI per host"
-        print("Running on {} nodes".format(self.nnode))
-        command = "mpirun -np {0:d} {1:s}".format(self.nnodes, program)
+        print("Running on {} nodes".format(self.nnodes))
 
-        # command = "mpirun -host {} ".format(
-        #     ",".join(self.nodelist)
-        # ) + "-np {0:d} {1:s}".format(self.nnodes, program)
+        # command = "mpirun -np {0:d} {1:s}".format(self.nnodes, program)
+
+        command = "mpirun -host {} ".format(
+            ",".join(self.nodelist)
+        ) + "-np {0:d} {1:s}".format(self.nnodes, program)
 
         if aslist:
             return shlex.split(command)
