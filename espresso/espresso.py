@@ -877,7 +877,8 @@ class Espresso(FileIOCalculator, object):
                 self.kpts[i] = 1
 
         # Isolated Atoms
-        if len(self.atoms) == 1:
+        if (len(self.atoms) == 1) & (self.atoms.get_volume() > 4**3):
+            print('Isolated atom evalutation')
             self.calcstress = False
             self.spinpol = False
             self.kpts = "gamma"
@@ -888,13 +889,13 @@ class Espresso(FileIOCalculator, object):
         """
         Checks in which direction there is vaccum and returns these directions
 
-        returns: direction in which slab has vaccuum (0:x, 1:y, 2:z) > 2 Armstrong
+        returns: direction in which slab has vaccuum (0:x, 1:y, 2:z) > 4 Armstrong
         """
 
         ats = atoms.copy()
         ats.center(vacuum=0)  # Remove all empty space around
         diff = atoms.cell - ats.cell  # Amount of vaccum in all directions
-        list_dir = np.arange(3)[np.sum(diff > 1, axis=1) != 0]
+        list_dir = np.arange(3)[np.sum(diff > 4, axis=1) != 0]
 
         return list_dir  # Returns axese wich have more than 1 Armstrong of vaccum
 
