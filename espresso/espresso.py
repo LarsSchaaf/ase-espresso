@@ -35,6 +35,7 @@ from ase.units import Hartree, Rydberg, Bohr
 
 from .utils import speciestuple, num2str, bool2str, convert_constraints
 from .siteconfig import SiteConfig, preserve_cwd
+from ase.io.espresso import kspacing_to_grid
 
 __version__ = '0.3.3'
 
@@ -358,6 +359,7 @@ class Espresso(FileIOCalculator, object):
                  fw=None,
                  nbands=-10,
                  kpts=(1, 1, 1),
+                 kspacing=None # deine kspacing rather than exact kpts
                  kptshift=(0, 0, 0),
                  fft_grid=None,
                  calculation='relax',
@@ -518,6 +520,7 @@ class Espresso(FileIOCalculator, object):
 
         self.nbands = nbands
         self.kpts = kpts
+        self.kspacing = kspacing
         self.kptshift = kptshift
         self.fft_grid = fft_grid  # RK
         self.calculation = calculation
@@ -793,7 +796,48 @@ class Espresso(FileIOCalculator, object):
         self.atoms2species()
 
         self.check_spinpol()
+        self.check_type_config() # Check wether type config is correct
         self._initialized = True
+
+    def check_type_config(self):
+        '''
+        Check wether correct configurations for slab or single atom
+
+        Adjusts the parameters such that it matches the type of atom configuration
+        that is going to be calculated
+        '''
+
+        # Correct slab configs
+        list_slab_ax = self.check_if_slab(self.atoms)
+        if len(list_slab_ax) != 0:
+            self.calcstress = False
+            print('Dipol correction on')
+            self.dipole = {"status": True}
+            print(f'kpts[{list_slab_ax}] = 1')
+            for i in list_slab_ax:
+                self.kpts[i] = 1
+
+        # Isolated Atoms
+        if len(self.atoms) == 1:
+            self.calcstress = False
+            self.spinpol = False
+            self.kpts = "gamma"
+            self.atoms.arrays.pop("initial_magmoms")
+
+    @staticmethod
+    def check_if_slab(atoms):
+        '''
+        Checks in which direction there is vaccum and returns these directions
+
+        returns: direction in which slab has vaccuum (0:x, 1:y, 2:z) > 2 Armstrong
+        '''
+
+        ats = atoms.copy()
+        ats.center(vacuum=0) # Remove all empty space around
+        diff = atoms.cell-ats.cell # Amount of vaccum in all directions
+        list_dir = np.arange(3)[np.sum(diff>1, axis=1) != 0]
+
+        return list_dir  # Returns axese wich have more than 1 Armstrong of vaccum
 
     def calculate(self, atoms, properties=['energy']):
         '''
@@ -845,6 +889,15 @@ class Espresso(FileIOCalculator, object):
             x = atoms.positions - self.atoms.positions
             if np.max(x) > 1E-13 or np.min(x) < -1E-13 or (not self.started and not self.got_energy):
                 self.recalculate = True
+
+        if (self.kspacing is not None) & (self.kpts is None):
+            self.kpts = kspacing_to_grid(atoms, spacing=self.kspacing)
+        elif (self.kspacing is not None) & (self.kpts is not None):
+            print('Problem: both self.kspacing and self.kpts are set')
+        else:
+            # self.kspacing is None, so do nothing
+            pass
+
         self.atoms = atoms.copy()
 
     def update(self, atoms):
@@ -865,7 +918,7 @@ class Espresso(FileIOCalculator, object):
         Read the results from the file and populate the `results` dictionary
         '''
         stress=self.read_stress() #3x3 matrix
-        
+
         try:
            stress= np.array([stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]])  #xx, yy, zz, yz, xz, xy in ase syntax
            print("converted stress matrix to ase compatible format")
