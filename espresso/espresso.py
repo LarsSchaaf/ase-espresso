@@ -859,20 +859,20 @@ class Espresso(FileIOCalculator, object):
         self._initialized = True
 
     def check_type_config(self):
-        '''
+        """
         Check wether correct configurations for slab or single atom
 
         Adjusts the parameters such that it matches the type of atom configuration
         that is going to be calculated
-        '''
+        """
 
         # Correct slab configs
         list_slab_ax = self.check_if_slab(self.atoms)
         if len(list_slab_ax) != 0:
             self.calcstress = False
-            print('Dipol correction on')
+            print("Dipol correction on")
             self.dipole = {"status": True}
-            print(f'kpts[{list_slab_ax}] = 1')
+            print(f"kpts[{list_slab_ax}] = 1")
             for i in list_slab_ax:
                 self.kpts[i] = 1
 
@@ -885,20 +885,20 @@ class Espresso(FileIOCalculator, object):
 
     @staticmethod
     def check_if_slab(atoms):
-        '''
+        """
         Checks in which direction there is vaccum and returns these directions
 
         returns: direction in which slab has vaccuum (0:x, 1:y, 2:z) > 2 Armstrong
-        '''
+        """
 
         ats = atoms.copy()
         ats.center(vacuum=0)  # Remove all empty space around
-        diff = atoms.cell-ats.cell  # Amount of vaccum in all directions
-        list_dir = np.arange(3)[np.sum(diff>1, axis=1) != 0]
+        diff = atoms.cell - ats.cell  # Amount of vaccum in all directions
+        list_dir = np.arange(3)[np.sum(diff > 1, axis=1) != 0]
 
         return list_dir  # Returns axese wich have more than 1 Armstrong of vaccum
 
-    def calculate(self, atoms, properties=['energy']):
+    def calculate(self, atoms, properties=["energy"]):
         """
         Run the calculation and retrieve the results
         """
@@ -956,7 +956,7 @@ class Espresso(FileIOCalculator, object):
         if (self.kspacing is not None) & (self.kpts is None):
             self.kpts = kspacing_to_grid(atoms, spacing=self.kspacing)
         elif (self.kspacing is not None) & (self.kpts is not None):
-            print('Problem: both self.kspacing and self.kpts are set')
+            print("Problem: both self.kspacing and self.kpts are set")
         else:
             # self.kspacing is None, so do nothing
             pass
