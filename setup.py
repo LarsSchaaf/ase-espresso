@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 """
@@ -13,48 +12,53 @@ LICENSE = "GPLv3"
 URL = "https://github.com/lmmentel/ase-espresso"
 AUTHOR = "Lukasz Mentel"
 EMAIL = "lmmentel@gmail.com"
-VERSION = '0.3.3'
-CLASSIFIERS = ['Development Status :: 3 - Alpha',
-               'Environment :: Console',
-               'Intended Audience :: Science/Research',
-               'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-               'Natural Language :: English',
-               'Programming Language :: Python',
-               'Programming Language :: Python :: 2',
-               'Programming Language :: Python :: 3',
-               'Topic :: Scientific/Engineering :: Chemistry',
-               'Topic :: Scientific/Engineering :: Physics']
-DEPENDENCIES = ['ase',
-                'future',
-                'numpy',
-                'path.py',
-                'pexpect',
-                'python-hostlist',
-                'six']
-KEYWORDS = 'chemistry physics quantum mechanics solid state'
+VERSION = "0.3.3"
+CLASSIFIERS = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+DEPENDENCIES = [
+    "ase",
+    "future",
+    "numpy",
+    "path.py",
+    "pexpect",
+    "python-hostlist",
+    "six",
+]
+KEYWORDS = "chemistry physics quantum mechanics solid state"
 
 
 def readme():
-    'Return the contents of the README.md file.'
-    with open('README.rst') as freadme:
+    "Return the contents of the README.md file."
+    with open("README.rst") as freadme:
         return freadme.read()
 
 
 def setup_package():
 
-    setup(name=MAIN_PACKAGE,
-          version=VERSION,
-          url=URL,
-          description=DESCRIPTION,
-          author=AUTHOR,
-          author_email=EMAIL,
-          license=LICENSE,
-          keywords=KEYWORDS,
-          long_description=readme(),
-          classifiers=CLASSIFIERS,
-          packages=['espresso'],
-          install_requires=DEPENDENCIES,
-          )
+    setup(
+        name=MAIN_PACKAGE,
+        version=VERSION,
+        url=URL,
+        description=DESCRIPTION,
+        author=AUTHOR,
+        author_email=EMAIL,
+        license=LICENSE,
+        keywords=KEYWORDS,
+        long_description=readme(),
+        classifiers=CLASSIFIERS,
+        packages=["espresso"],
+        install_requires=DEPENDENCIES,
+    )
 
 
 if __name__ == "__main__":
