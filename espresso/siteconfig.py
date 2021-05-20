@@ -114,8 +114,6 @@ class SiteConfig(with_metaclass(Singleton, object)):
             self.set_slurm_env()
         elif self.scheduler.lower() in ["pbs", "torque"]:
             self.set_pbs_env()
-        elif self.scheduler.lower() == "ge":  # grid engine
-            self.set_grid_engine_env()
 
     @classmethod
     def check_scheduler(cls):
@@ -237,39 +235,6 @@ class SiteConfig(with_metaclass(Singleton, object)):
             + " -wdir {0:s} {1:s}"
         )
 
-    def set_grid_engine_env(self):
-        """
-        Set the attributes necessary to run the job based on the
-        enviromental variables associated with Gridengine scheduler
-        """
-
-        self.scheduler = "ge"
-        self.batchmode = True
-
-        self.set_global_scratch()
-
-        self.jobid = os.getenv("JOB_ID")
-        self.submitdir = Path(os.getenv("SGE_O_WORKDIR"))
-
-        # nodefile = os.getenv('PBS_NODEFILE')
-        # with open(nodefile, 'r') as nf:
-        self.hosts = [os.getenv("HOSTNAME")]
-
-        self.nprocs = len(self.hosts)
-        uniqnodes = sorted(set(self.hosts))
-        self.nodelist = uniqnodes
-        self.nnodes = int(os.getenv("NSLOTS"))
-        self.perHostMpiExec = [
-            "mpirun",  #'-host', ','.join(uniqnodes),
-            "-np",
-            "{0:d}".format(self.nnodes),
-        ]
-
-        self.perProcMpiExec = (
-            "echo error 9382 LS"  #'mpiexec -machinefile {nf:s} -np {np:s}'.format(
-        )
-        # nf=nodefile, np=str(self.nprocs)) + ' -wdir {0:s} {1:s}'
-
     def make_localtmp(self, workdir):
         """
         Create a temporary local directory for the job
@@ -317,10 +282,6 @@ class SiteConfig(with_metaclass(Singleton, object)):
 
     def get_host_mpi_command(self, program, aslist=True):
         "Return a command as list to execute `program` through MPI per host"
-        print("Running on {} nodes".format(self.nnodes))
-
-        # command = "mpirun -np {0:d} {1:s}".format(self.nnodes, program)
-
         command = "mpirun -host {} ".format(
             ",".join(self.nodelist)
         ) + "-np {0:d} {1:s}".format(self.nnodes, program)
