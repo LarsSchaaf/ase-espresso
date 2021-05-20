@@ -1273,8 +1273,6 @@ class Espresso(FileIOCalculator, object):
                 for line in fupf:
                     if pattern.search(line):
                         if "=" in line:
-                            print(len(line.split("=")))
-                            print(line.split("="))
                             name, value = line.split("=")
                             nel[symbol] = int(round(float(value.strip('"\n'))))
                         else:
@@ -1492,7 +1490,6 @@ class Espresso(FileIOCalculator, object):
             else:
                 # if self.nbands is negative create - self.nbands extra bands
                 if self.nvalence is None:
-                    print(len(self.get_nvalence()), self.get_nvalence())
                     self.nvalence, self.nel = self.get_nvalence()
                 if self.noncollinear:
                     self.nbnd = int(np.sum(self.nvalence) - self.nbands * 2.0)
