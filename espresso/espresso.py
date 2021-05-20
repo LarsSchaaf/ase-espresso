@@ -836,6 +836,7 @@ class Espresso(FileIOCalculator, object):
         self.atoms2species()
 
         self.check_spinpol()
+        self.check_type_config()  # Check wether type config is correct
         self._initialized = True
 
     def initialize(self, atoms):
@@ -865,17 +866,10 @@ class Espresso(FileIOCalculator, object):
         Adjusts the parameters such that it matches the type of atom configuration
         that is going to be calculated
         """
-
+        print('check type config')
         # Correct slab configs
         list_slab_ax = self.check_if_slab(self.atoms)
-        if len(list_slab_ax) != 0:
-            self.calcstress = False
-            print("Dipol correction on")
-            self.dipole = {"status": True}
-            print(f"kpts[{list_slab_ax}] = 1")
-            for i in list_slab_ax:
-                self.kpts[i] = 1
-
+        
         # Isolated Atoms
         if (len(self.atoms) == 1) & (self.atoms.get_volume() > 4**3):
             print('Isolated atom evalutation')
@@ -883,6 +877,16 @@ class Espresso(FileIOCalculator, object):
             self.spinpol = False
             self.kpts = "gamma"
             self.atoms.arrays.pop("initial_magmoms")
+
+        elif len(list_slab_ax) != 0:
+            self.calcstress = False
+            print("Dipol correction on")
+            self.dipole = {"status": True}
+            print(f"kpts[{list_slab_ax}] = 1")
+            for i in list_slab_ax:
+                self.kpts[i] = 1
+
+
 
     @staticmethod
     def check_if_slab(atoms):
