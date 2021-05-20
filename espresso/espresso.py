@@ -373,7 +373,6 @@ class Espresso(FileIOCalculator, object):
         fw=None,
         nbands=-10,
         kpts=(1, 1, 1),
-        kspacing=None,
         kptshift=(0, 0, 0),
         fft_grid=None,
         calculation="relax",
@@ -535,7 +534,6 @@ class Espresso(FileIOCalculator, object):
 
         self.nbands = nbands
         self.kpts = kpts
-        self.kspacing = kspacing
         self.kptshift = kptshift
         self.fft_grid = fft_grid  # RK
         self.calculation = calculation
@@ -856,52 +854,7 @@ class Espresso(FileIOCalculator, object):
         self.atoms2species()
 
         self.check_spinpol()
-        self.check_type_config()  # Check wether type config is correct
         self._initialized = True
-
-    def check_type_config(self):
-        """
-        Check wether correct configurations for slab or single atom
-
-        Adjusts the parameters such that it matches the type of atom configuration
-        that is going to be calculated
-        """
-        print('check type config')
-        # Correct slab configs
-        list_slab_ax = self.check_if_slab(self.atoms)
-        
-        # Isolated Atoms
-        if (len(self.atoms) == 1) & (self.atoms.get_volume() > 4**3):
-            print('Isolated atom evalutation')
-            self.calcstress = False
-            self.spinpol = False
-            self.kpts = "gamma"
-            self.atoms.arrays.pop("initial_magmoms")
-
-        elif len(list_slab_ax) != 0:
-            self.calcstress = False
-            print("Dipol correction on")
-            self.dipole = {"status": True}
-            print(f"kpts[{list_slab_ax}] = 1")
-            for i in list_slab_ax:
-                self.kpts[i] = 1
-
-
-
-    @staticmethod
-    def check_if_slab(atoms):
-        """
-        Checks in which direction there is vaccum and returns these directions
-
-        returns: direction in which slab has vaccuum (0:x, 1:y, 2:z) > 4 Armstrong
-        """
-
-        ats = atoms.copy()
-        ats.center(vacuum=0)  # Remove all empty space around
-        diff = atoms.cell - ats.cell  # Amount of vaccum in all directions
-        list_dir = np.arange(3)[np.sum(diff > 4, axis=1) != 0]
-
-        return list_dir  # Returns axese wich have more than 1 Armstrong of vaccum
 
     def calculate(self, atoms, properties=["energy"]):
         """
@@ -957,14 +910,6 @@ class Espresso(FileIOCalculator, object):
                 or (not self.started and not self.got_energy)
             ):
                 self.recalculate = True
-
-        if (self.kspacing is not None) & (self.kpts is None):
-            self.kpts = kspacing_to_grid(atoms, spacing=self.kspacing)
-        elif (self.kspacing is not None) & (self.kpts is not None):
-            print("Problem: both self.kspacing and self.kpts are set")
-        else:
-            # self.kspacing is None, so do nothing
-            pass
 
         self.atoms = atoms.copy()
 
