@@ -27,7 +27,6 @@ from collections import OrderedDict
 from io import open
 from path import Path
 import logging
-import tempfile
 
 import pexpect
 
@@ -36,7 +35,6 @@ from ase.units import Hartree, Rydberg, Bohr
 
 from .utils import speciestuple, num2str, bool2str, convert_constraints
 from .siteconfig import SiteConfig, preserve_cwd
-from ase.io.espresso import kspacing_to_grid
 
 __version__ = "0.3.3"
 
@@ -797,46 +795,6 @@ class Espresso(FileIOCalculator, object):
                     "Consider setting <ESP_PSP_PATH> environment variable"
                 )
 
-    def easy_initialize(self, atoms):
-        """
-        Create the scratch directories and pw.inp input file and
-        prepare for writing the input file -
-        """
-
-        if not self._initialized:
-            # self.create_outdir() instead:
-            self.localtmp = self.site.make_localtmp(self.outdir)
-
-            # self.scratch = self.site.make_scratch()
-
-            prefix = "_".join(["qe", str(os.getuid())])
-            # self.user_scratch = Path(
-            #     tempfile.mkdtemp(
-            #         prefix=prefix, suffix="_scratch",  # dir=self.global_scratch
-            #     )
-            # )
-
-            # Replacement for self. scratch ends
-
-            if self.txt is None:
-                self.log = self.localtmp.joinpath("log")
-            else:
-                self.log = self.localtmp.joinpath(self.txt)
-
-            # Continue
-            self.logfile = open(self.log, "ab")
-            if self.site.usehostfile:
-                self.site.write_local_hostfile()
-
-        self.set_pseudo_path()
-        self.atoms = atoms.copy()
-        self.natoms = len(self.atoms)
-        self.atoms2species()
-
-        self.check_spinpol()
-        self.check_type_config()  # Check wether type config is correct
-        self._initialized = True
-
     def initialize(self, atoms):
         """
         Create the scratch directories and pw.inp input file and
@@ -910,7 +868,6 @@ class Espresso(FileIOCalculator, object):
                 or (not self.started and not self.got_energy)
             ):
                 self.recalculate = True
-
         self.atoms = atoms.copy()
 
     def update(self, atoms):
